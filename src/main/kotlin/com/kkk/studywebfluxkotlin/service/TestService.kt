@@ -1,11 +1,66 @@
 package com.kkk.studywebfluxkotlin.service
 
+import com.kkk.studywebfluxkotlin.dto.AuthorWithCards
+import com.kkk.studywebfluxkotlin.dto.CardWithAuthor
 import com.kkk.studywebfluxkotlin.entity.Card
-import com.kkk.studywebfluxkotlin.repository.TestRepository
+import com.kkk.studywebfluxkotlin.repository.AuthorRepository
+import com.kkk.studywebfluxkotlin.repository.CardRepository
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Service
-class TestService(private val repo: TestRepository) {
-    fun getAll(): Flux<Card> = repo.findAll()
+class TestService(private val cardRepo: CardRepository, private val authRepo: AuthorRepository) {
+    fun getAll(): Flux<Card> = cardRepo.findAll()
+
+    fun getById(id: Long): Mono<Card> = cardRepo.findById(id)
+
+    fun createCard(card: Mono<Card>): Mono<Card> {
+        return card.flatMap { cardRepo.save(it) }
+    }
+
+    fun deleteCardById(id: Long): Mono<Card> {
+        return cardRepo.findById(id).flatMap { card -> cardRepo.delete(card).thenReturn(card) }
+    }
+
+    /**
+     * 1:N 관계 (Author -> Card)
+     */
+    fun getAuthorWithCards(authorId: Long): Mono<AuthorWithCards> {
+        return authRepo.findById(authorId).flatMap { author ->
+            cardRepo.findAllByAuthorId(authorId)
+                .collectList().map { card -> AuthorWithCards(author, card) }
+        }
+    }
+
+    /// Mono로 한 번에 묶어서 보냄... 권장되지는 않음
+    fun getAuthorWithCardsMono(authorIds: List<Long>): Mono<List<AuthorWithCards>> {
+        val authors = authRepo.findAllById(authorIds).collectList()
+        val cards = cardRepo.findAllByAuthorIdIn(authorIds).collectList()
+        return Mono.zip(authors, cards) { aList, bList ->
+            aList.map { author ->
+                AuthorWithCards(author, bList.filter { it.authorId == author.id })
+            }
+        }
+    }
+
+    /// Flux로 스트리밍 전송
+    fun getAuthorWithCardsFlux(authorIds: List<Long>): Flux<AuthorWithCards> {
+        return authRepo.findAllById(authorIds)
+            .flatMap { author ->
+                cardRepo.findAllByAuthorId(author.id!!).collectList()
+                    .map { cards -> AuthorWithCards(author, cards) }
+            }
+    }
+
+    /**
+     * N:1 관계 (Card -> Author)
+     */
+    fun getCardWithAuthor(cardId: Long): Mono<CardWithAuthor> {
+        return cardRepo.findById(cardId)
+            .flatMap { card ->
+                authRepo.findById(card.authorId)
+                    .map { author -> CardWithAuthor(card, author) }
+            }
+    }
 }

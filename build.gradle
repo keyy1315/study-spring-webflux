@@ -29,14 +29,18 @@ dependencies {
     implementation 'io.projectreactor.kotlin:reactor-kotlin-extensions'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-reactor'
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
-    implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webmvc'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test'
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.postgresql:r2dbc-postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
+    // swagger
+    testImplementation 'org.springdoc:springdoc-openapi-starter-webflux-api:2.8.13'
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.13'
 }
 
 kotlin {

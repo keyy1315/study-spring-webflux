@@ -1,4 +1,28 @@
 spring:
   application:
     name: study-webflux-kotlin
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5433/toy
+    username: postgres
+    password: root
 
+
+logging:
+  level:
+    root: INFO
+    com.kkk.studywebfluxkotlin: DEBUG
+    org.springframework.r2dbc.core: TRACE
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr(%5p) %clr(%logger{36}){cyan} - %msg%n"
+
+
+
+# Swagger
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui/index.html
+    try-it-out-enabled: true
+  show-actuator: true
+#  http://localhost:8080/swagger-ui/swagger-ui/index.html
