@@ -1,6 +1,7 @@
 package com.kkk.studywebfluxkotlin.controller
 
 import com.kkk.studywebfluxkotlin.dto.AuthorWithCards
+import com.kkk.studywebfluxkotlin.dto.CardResponse
 import com.kkk.studywebfluxkotlin.dto.CardWithAuthor
 import com.kkk.studywebfluxkotlin.entity.Card
 import com.kkk.studywebfluxkotlin.service.TestService
@@ -15,7 +16,7 @@ class TestController(private val service: TestService) {
 
     @Operation(summary = "Get all the cards")
     @GetMapping
-    fun allCards(): Flux<Card> = service.getAll()
+    fun allCards(): Flux<CardResponse> = service.getAll()
 
     @Operation(summary = "Get card By card pk")
     @GetMapping("/{id}")

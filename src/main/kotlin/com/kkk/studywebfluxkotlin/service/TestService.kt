@@ -1,7 +1,9 @@
 package com.kkk.studywebfluxkotlin.service
 
 import com.kkk.studywebfluxkotlin.dto.AuthorWithCards
+import com.kkk.studywebfluxkotlin.dto.CardResponse
 import com.kkk.studywebfluxkotlin.dto.CardWithAuthor
+import com.kkk.studywebfluxkotlin.entity.Author
 import com.kkk.studywebfluxkotlin.entity.Card
 import com.kkk.studywebfluxkotlin.repository.AuthorRepository
 import com.kkk.studywebfluxkotlin.repository.CardRepository
@@ -11,7 +13,25 @@ import reactor.core.publisher.Mono
 
 @Service
 class TestService(private val cardRepo: CardRepository, private val authRepo: AuthorRepository) {
-    fun getAll(): Flux<Card> = cardRepo.findAll()
+    fun getAll(): Flux<CardResponse> {
+//        아래 코드는 N+1문제 발생.. 매 카드마다 author 찾는 쿼리 날림
+//        return cardRepo.findAll().flatMap { card ->
+//            authRepo.findById(card.authorId).map { author -> CardResponse.from(card, author) }
+//        }
+        return authRepo.findAll()
+            .collectMap { it.id!! }
+            .flatMapMany { authorMap ->
+                cardRepo.findAll().map { card ->
+                    val author = authorMap[card.authorId]
+                    CardResponse.from(
+                        card, author ?: Author(
+                            null,
+                            name = "Unknown"
+                        )
+                    )
+                }
+            }
+    }
 
     fun getById(id: Long): Mono<Card> = cardRepo.findById(id)
 
